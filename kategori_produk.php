@@ -154,7 +154,8 @@
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Dashboard</a></li>
-         <li class="breadcrumb-item active">Kategori Produk</li>
+         <!-- Breadcrumb -->
+<li class="breadcrumb-item active">Kategori Produk</li>
 </ol>
 </nav>
 </div><!-- End Page Title -->
@@ -163,68 +164,83 @@
   <div class="row">
     <div class="col-lg-12">
 
+      <!-- Card Tombol -->
       <div class="card">
         <div class="card-body p-4">
 
-          <h5 class="card-title mb-4">Data Kategori Produk</h5>
-
-          <!-- Tombol -->
-          <div class="mb-4">
+          <div class="mb-2">
             <a href="t_kat.php" class="btn btn-primary">
               Tambah Data
             </a>
           </div>
 
-          <!-- Table -->
-          <table class="table table-striped datatable">
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Kode Kategori</th>
-                <th>Kategori Produk</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
+        </div>
+      </div>
 
-            <tbody>
-<?php
-include "koneksi.php";
+      <!-- Card Tabel -->
+      <div class="card">
+        <div class="card-body p-4">
 
-$no = 1;
+          <div class="table-responsive">
+            <table class="table datatable align-middle">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode Kategori</th>
+                  <th>Kategori Produk</th>
+                  <th class="text-center">Aksi</th>
+                </tr>
+              </thead>
 
-$sql = mysqli_query($conn, "SELECT * FROM categories");
+              <tbody>
 
-while($data = mysqli_fetch_array($sql)){
-?>
+                <?php
+                include "koneksi.php";
 
-<tr>
-    <td><?php echo $no++; ?></td>
-    <td><?php echo $data['category_id']; ?></td>
-    <td><?php echo $data['nm_kat']; ?></td>
-    <td>
-        <a href="e_kat.php?id=<?php echo $data['id']; ?>" class="btn btn-warning btn-sm">
-            Edit
-        </a>
+                $no = 1;
 
-        <a href="h_kat.php?id=<?php echo $data['id']; ?>" 
-        class="btn btn-danger btn-sm"
-        onclick="return confirm('Yakin ingin menghapus data?')">
-            Hapus
-        </a>
-    </td>
-</tr>
+                $query = mysqli_query($conn, "SELECT * FROM categories");
 
-<?php } ?>
-                </tbody>
-              </table>
-              <!-- End Table with stripped rows -->
+                if (!$query) {
+                    die("Query Error : " . mysqli_error($conn));
+                }
 
-            </div>
+                while ($data = mysqli_fetch_array($query)) {
+                ?>
+
+                <tr>
+                  <td><?= $no++; ?></td>
+                  <td><?= $data['category_id']; ?></td>
+                  <td><?= $data['nm_kat']; ?></td>
+
+                  <td class="text-center">
+
+                    <a href="e_kat.php?id=<?= $data['id']; ?>"
+                      class="btn btn-warning btn-sm">
+                      Edit
+                    </a>
+
+                    <a href="h_kat.php?id=<?= $data['id']; ?>"
+                      class="btn btn-danger btn-sm"
+                      onclick="return confirm('Yakin ingin menghapus data ini?')">
+                      Hapus
+                    </a>
+
+                  </td>
+                </tr>
+
+                <?php } ?>
+
+              </tbody>
+            </table>
           </div>
 
         </div>
       </div>
-    </section>
+
+    </div>
+  </div>
+</section>
 
   </main><!-- End #main -->
 
