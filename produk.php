@@ -167,7 +167,9 @@ include "koneksi.php";
           <div class="card">
             <div class="card-body mt-3">
               <a href="t_produk.php" class="btn btn-primary">Tambah Data</a>
-              <a href="stok.php" class="btn btn-primary">Stok</a>
+              <a href="stok.php" class="btn btn-dark">
+                <i class="bi bi-box-seam"></i> Stok
+              </a>
             </div>
           </div>
         </div>

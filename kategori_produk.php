@@ -154,37 +154,39 @@
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Dashboard</a></li>
-          <li class="breadcrumb-item active">Kategori Produk</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
+         <li class="breadcrumb-item active">Kategori Produk</li>
+</ol>
+</nav>
+</div><!-- End Page Title -->
 
-    <section class="section">
-      <div class="row">
-        <div class="col-lg-12">
+<section class="section">
+  <div class="row">
+    <div class="col-lg-12">
 
-          <div class="card">
-            <div class="card-body">
+      <div class="card">
+        <div class="card-body p-4">
 
-  <h5 class="card-title">Data Kategori Produk</h5>
+          <h5 class="card-title mb-4">Data Kategori Produk</h5>
 
-  <a href="t_kat.php" class="btn btn-primary mb-3">
-    Tambah Data
-  </a>
-              <h5 class="card-title">Datatables</h5>
+          <!-- Tombol -->
+          <div class="mb-4">
+            <a href="t_kat.php" class="btn btn-primary">
+              Tambah Data
+            </a>
+          </div>
 
-              <!-- Table with stripped rows -->
-              <table class="table datatable">
-                <thead>
-  <tr>
-    <th scope="col">No</th>
-    <th scope="col">Kode Kategori</th>
-    <th scope="col">Kategori Produk</th>
-    <th scope="col">Aksi</th>
-  </tr>
-</thead>
+          <!-- Table -->
+          <table class="table table-striped datatable">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Kode Kategori</th>
+                <th>Kategori Produk</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
 
-<tbody>
+            <tbody>
 <?php
 include "koneksi.php";
 
