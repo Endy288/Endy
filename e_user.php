@@ -263,7 +263,7 @@ if(isset($_POST['update'])){
     </div>
 
     <div class="text-center">
-        <a href="users.php" class="btn btn-warning">Kembali</a>
+        <a href="users.php" class="btn btn-dark">Kembali</a>
         <button type="submit" class="btn btn-success" name="update">Update</button>
     </div>
 
