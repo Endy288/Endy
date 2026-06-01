@@ -57,8 +57,8 @@ include "koneksi.php";
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Kevin Anderson</h6>
-              <span>Web Designer</span>
+              <h6><?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></h6>
+              <span><?php echo isset($_SESSION['role']) ? $_SESSION['role'] : 'Role'; ?></span>
             </li>
             <li>
               <hr class="dropdown-divider">
@@ -233,9 +233,9 @@ while($row = mysqli_fetch_array($query)) {
     </td>
 
     <td>
-        <a href="edit_produk.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">
+        <a href="e_produk.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">
             Edit
-        </a>
+       </a>
 
         <a href="hapus_produk.php?id=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm">
             Hapus
@@ -267,7 +267,7 @@ while($row = mysqli_fetch_array($query)) {
     </div>
   </footer><!-- End Footer -->
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <a href="https://www.instagram.com/endyyobelihs" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
   <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>

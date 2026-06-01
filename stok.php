@@ -1,68 +1,108 @@
 <?php
-include "koneksi.php";
-?>
 
-<main id="main" class="main">
+session_start();
+include 'koneksi.php';
 
-<div class="pagetitle">
-  <h1>Stock Produk</h1>
-</div>
+// cek apakah sudah login
+if (!isset($_SESSION['login'])) {
+    header('Location: login.php');
+    exit;
+}
 
-<section class="section">
-<div class="row">
-<div class="col-lg-12">
+if (isset($_POST['submit'])) {
 
-<div class="card">
-<div class="card-body">
+    $product_id  = $_POST['product_id'];
+    $change_type = $_POST['change_type'];
+    $qty         = intval($_POST['qty']);
+    $note        = $_POST['note'];
+    $user_id     = $_SESSION['user_id'];
 
-<h5 class="card-title">Data Stock Produk</h5>
+    // Ambil stok sekarang
+    $q = mysqli_query($conn, "
+        SELECT stock
+        FROM products
+        WHERE id = '$product_id'
+    ");
 
-<table class="table datatable">
-<thead>
-<tr>
-  <th>No</th>
-  <th>Kode Produk</th>
-  <th>Nama Produk</th>
-  <th>Kategori</th>
-  <th>Stock</th>
-</tr>
-</thead>
+    if (!$q) {
+        die("SQL Error: " . mysqli_error($conn));
+    }
 
-<tbody>
+    $data = mysqli_fetch_assoc($q);
 
-<?php
-$query = mysqli_query($conn, "
-SELECT products.*, categories.nm_kat
-FROM products
-JOIN categories ON products.category_id = categories.category_id
+    if (!$data) {
+        die("Produk tidak ditemukan");
+    }
+
+    $stock_before = $data['stock'];
+
+    // Hitung stok baru
+    if ($change_type == 'ADD') {
+
+        $stock_after = $stock_before + $qty;
+
+    } else {
+
+        $stock_after = $stock_before - $qty;
+
+        if ($stock_after < 0) {
+            echo "<script>
+                    alert('Stok tidak cukup!');
+                    window.location='stok.php';
+                  </script>";
+            exit;
+        }
+    }
+
+    // Update stok produk
+$update = mysqli_query($conn,"
+UPDATE products
+SET stock = '$stock_after'
+WHERE id = '$product_id'
 ");
 
-$no = 1;
+if($update){
 
-while($row = mysqli_fetch_array($query)){
+    // Simpan log
+    $log = mysqli_query($conn,"
+    INSERT INTO stock_logs
+    (product_id, change_type, qty, created_at)
+    VALUES
+    ('$product_id','$change_type','$qty',NOW())
+    ");
+
+    if(!$log){
+        die("Log Error: ".mysqli_error($conn));
+    }
+
+    echo "<script>
+        alert('Stok berhasil diperbarui');
+        window.location='stok.php';
+    </script>";
+
+}else{
+    die("Update Error: ".mysqli_error($conn));
+}
+
+    // Simpan riwayat stok
+    $log = mysqli_query($conn, "
+    INSERT INTO stock_logs
+    (product_id, change_type, qty, created_at)
+    VALUES
+    ('$product_id', '$change_type', '$qty', NOW())
+");
+
+if(!$log){
+    die("Error Log: " . mysqli_error($conn));
+}
+
+    echo "<script>
+            alert('Stok berhasil diperbarui');
+            window.location='stok.php';
+          </script>";
+    exit;
+}
 ?>
-
-<tr>
-  <td><?php echo $no++; ?></td>
-  <td><?php echo $row['product_Code']; ?></td>
-  <td><?php echo $row['product_name']; ?></td>
-  <td><?php echo $row['nm_kat']; ?></td>
-  <td><?php echo $row['stock']; ?></td>
-</tr>
-
-<?php } ?>
-
-</tbody>
-</table>
-
-</div>
-</div>
-
-</div>
-</div>
-</section>
-
-</main>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -91,11 +131,16 @@ while($row = mysqli_fetch_array($query)){
   <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
+  <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
 </head>
 
 <body>
-
+<?php if (isset($_GET['success'])): ?>
+  <script>
+    alert('Stok berhasil diperbarui!');
+  </script>
+<?php endif; ?>
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
@@ -118,54 +163,22 @@ while($row = mysqli_fetch_array($query)){
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Kevin Anderson</h6>
-              <span>Web Designer</span>
+              <h6><?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></h6>
+              <span><?php echo isset($_SESSION['role']) ? $_SESSION['role'] : 'Role'; ?></span>
             </li>
             <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
+              <hr class="dropdown-divider" />
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                <i class="bi bi-gear"></i>
-                <span>Account Settings</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
-                <i class="bi bi-question-circle"></i>
-                <span>Need Help?</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="login.php">
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Sign Out</span>
               </a>
             </li>
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
+         </ul><!-- End Profile Dropdown Items -->
+       </li><!-- End Profile Nav -->
+     </ul>
     </nav><!-- End Icons Navigation -->
 
   </header><!-- End Header -->
@@ -215,39 +228,114 @@ while($row = mysqli_fetch_array($query)){
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Stock Produk</h1>
+      <h1>Manajemen Stok</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Dashboard</a></li>
-          <li class="breadcrumb-item"><a href="produk.php">Produk</a></li>
-          <li class="breadcrumb-item active">Stock</li>
+          <li class="breadcrumb-item"><a href="produk.php">Data Produk</a></li>
+          <li class="breadcrumb-item active">Manajemen Stok</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
 
     <section class="section">
       <div class="row">
+        <!-- FORM MANAJEMEN STOK -->
         <div class="col-lg-6">
-
-          <div class="card">
+         <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Example Card</h5>
-              <p>This is an examle page with no contrnt. You can use it as a starter for your custom pages.</p>
+              <h5 class="card-title">Manajemen Stok</h5>
+              <form method="post">
+              <div class="mb-3">
+                <label class="form-label">Pilih Produk</label>
+                <select name="product_id" class="form-select" required>
+                  <option value="">-- Pilih Produk --</option>
+                  <?php
+                  include 'koneksi.php';
+                  $produk = mysqli_query($conn, "SELECT * FROM products");
+                  while ($p = mysqli_fetch_assoc($produk)) {
+                    echo "<option value='{$p['id']}'>{$p['product_name']}</option>";
+                  }
+                  ?>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Jenis Aksi</label>
+                <select name="change_type" class="form-select">
+                  <option value="ADD">Tambah Stok</option>
+                  <option value="REDUCE">Kurangi Stok</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Jumlah</label>
+                <input type="number" name="qty" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Catatan</label>
+                <textarea name="note" class="form-control" rows="2"></textarea>
+              </div>
+              <button type="submit" name="submit" class="btn btn-primary">Simpan Perubahan</button>
+              </form>
             </div>
-          </div>
-
+         </div>
         </div>
 
+        <!-- RIWAYAT STOK -->
         <div class="col-lg-6">
-
-          <div class="card">
+         <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Example Card</h5>
-              <p>This is an examle page with no contrnt. You can use it as a starter for your custom pages.</p>
+              <h5 class="card-title">Riwayat Stok</h5>
+
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Tanggal</th>
+                    <th scope="col">Produk</th>
+                    <th scope="col">Aksi</th>
+                    <th scope="col">Qty</th>
+                    <th scope="col">User</th>
+                  </tr>
+                </thead>
+                <tbody>
+<?php
+
+$query = mysqli_query($conn, "
+SELECT
+    sl.created_at,
+    p.product_name,
+    sl.change_type,
+    sl.qty
+FROM stock_logs sl
+JOIN products p ON sl.product_id = p.id
+ORDER BY sl.created_at DESC
+");
+
+if(!$query){
+    die("SQL Error: " . mysqli_error($conn));
+}
+
+while ($row = mysqli_fetch_assoc($query)) {
+
+    $badge = ($row['change_type'] == 'ADD')
+        ? "<span class='badge bg-success'>+ (ADD)</span>"
+        : "<span class='badge bg-danger'>- (REDUCE)</span>";
+
+    echo "
+    <tr>
+        <td>" . date('d M Y H:i', strtotime($row['created_at'])) . "</td>
+        <td>{$row['product_name']}</td>
+        <td>{$badge}</td>
+        <td>{$row['qty']}</td>
+        <td>-</td>
+    </tr>
+    ";
+}
+?>
+</tbody>
+              </table>
             </div>
           </div>
-
-        </div>
+       </div>
       </div>
     </section>
 
@@ -259,7 +347,7 @@ while($row = mysqli_fetch_array($query)){
       &copy; Copyright <strong><span>BarangEndy</span></strong>. All Rights Reserved
     </div>
     <div class="credits">
-      Designed by <a href="#">EndyYobel</a>
+      Designed by <a href="https://www.instagram.com/endyyobelihs">EndyYobel</a>
     </div>
   </footer><!-- End Footer -->
 

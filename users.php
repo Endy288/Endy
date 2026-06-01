@@ -53,8 +53,8 @@
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Kevin Anderson</h6>
-              <span>Web Designer</span>
+              <h6><?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></h6>
+              <span><?php echo isset($_SESSION['role']) ? $_SESSION['role'] : 'Role'; ?></span>
             </li>
             <li>
               <hr class="dropdown-divider">
@@ -280,7 +280,7 @@
       &copy; Copyright <strong><span>BarangEndy</span></strong>. All Rights Reserved
     </div>
     <div class="credits">
-      Designed by <a href="#">EndyYobel</a>
+      Designed by <a href="https://www.instagram.com/endyyobelihs">EndyYobel</a>
     </div>
   </footer><!-- End Footer -->
 
@@ -296,7 +296,6 @@
   <script src="assets/vendor/tinymce/tinymce.min.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
 
 </body>

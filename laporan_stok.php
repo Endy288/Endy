@@ -1,70 +1,179 @@
 <?php
-include "koneksi.php";
+//  Require composer autoload
+require_once __DIR__ . '/vendor/autoload.php';
 
-$query = mysqli_query($conn, "SELECT * FROM products");
-?>
+// Koneksi database
+require_once ('koneksi.php');
+function query($sql)
+{
+    global $conn;
 
-<!DOCTYPE html>
-<html lang="en">
+    $result = mysqli_query($conn, $sql);
+
+    if (!$result) {
+        die("SQL Error: " . mysqli_error($conn));
+    }
+
+    $rows = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $rows[] = $row;
+    }
+
+    return $rows;
+}
+
+$data = query("
+SELECT
+    p.id,
+    p.product_Code,
+    p.product_name,
+    c.nm_kat,
+    p.stock,
+    p.min_stock,
+    p.price,
+    p.gambar,
+    p.created_id
+FROM products p
+LEFT JOIN categories c
+    ON p.category_id = c.category_id
+ORDER BY p.product_name ASC
+");
+
+// Inisialisasi mPDF
+$mpdf = new \Mpdf\Mpdf([
+    'format' => 'A4-L'
+]);
+
+$html = '
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Stok Barang</title>
+    <style>
+        body { font-family: sans-serif; }
 
-    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        h1 { 
+            text-align: center; 
+             color: #262626;
+             margin-bottom: 5px;
+        }
+
+        h3 { 
+            text-align: center; 
+             margin-top: 0;
+             margin-bottom: 20px;
+        }
+        table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-bottom: 20px;
+        }
+        thead th { 
+                background-color: #4e73df; 
+                color: white;
+                padding: 10px; 
+                font-size: 12px;
+        }
+        tbody td { 
+                padding: 8px;
+                font-size: 11px;
+                border: 1px solid #ccc;
+        }
+        tbody tr:nth-child(even) { 
+            background-color: #f2f2f2; 
+        }
+        .text-center { 
+            text-align: center; 
+        }
+        .text-right { 
+            text-align: right; 
+        }
+        img { 
+            width: 70px; 
+            height: 70px; 
+            object-fit: cover;
+        }
+        .stok-aman { 
+            color: green; 
+            font-weight: bold; 
+        }
+        .stok-minim { 
+            color: red; 
+            font-weight: bold; 
+        }
+    </style>
 </head>
 <body>
 
-<div class="container mt-5">
+<h1>BarangEndy</h1>
+<hr>
+<h3>LAPORAN STOK BARANG</h3>
 
-    <h2 class="mb-4">Laporan Stok Barang</h2>
+<table>
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Gambar</th>
+            <th>Kode Produk</th>
+            <th>Nama Produk</th>
+            <th>Kategori</th>
+            <th>Harga</th>
+            <th>Stok</th>
+            <th>Min. Stok</th>
+            <th>Status</th>
+            <th>Tanggal Dibuat</th>
+        </tr>
+    </thead>
 
-    <table class="table table-bordered table-striped">
+    <tbody>
+';
+    
+    $no = 1;
+    foreach ($data as $row) {
+        $harga = "Rp " . number_format($row['price'], 0, ',', '.');
 
-        <thead class="table-dark">
-            <tr>
-                <th>No</th>
-                <th>Kode Produk</th>
-                <th>Nama Produk</th>
-                <th>Stok</th>
-                <th>Harga</th>
-                <th>Gambar</th>
-            </tr>
-        </thead>
+        // Status stok
+        if ($row['stock'] <= $row['min_stock']) {
+    $status = '<span class="stok-minim">Stok Minim</span>';
+} else {
+    $status = '<span class="stok-aman">Aman</span>';
+}
 
-        <tbody>
+        // path gambar
+        $gambar = 'produk_img/' . $row['gambar'];
 
-        <?php
-        $no = 1;
+        // Jika gambar kosong
+        if (empty($row['gambar']) || !file_exists($gambar)) {
+            $gambarHtml = '-';
+        } else {
+            $gambarHtml = '<img src="' . $gambar . '">';
+        }
 
-        while($row = mysqli_fetch_array($query)) {
-        ?>
+        $html .= '
+        <tr>
+            <td class="text-center">' . $no++ . '</td>
+            <td class="text-center">' . $gambarHtml . '</td>
+            <td>' . $row['product_Code'] . '</td>
+            <td>' . $row['product_name'] . '</td>
+            <td>' . $row['nm_kat'] . '</td>
+            <td class="text-right">' . $harga . '</td>
+            <td class="text-center">' . $row['stock'] . '</td>
+            <td class="text-center">' . $row['min_stock'] . '</td>
+            <td class="text-center">' . $status . '</td>
+            <td class="text-center">' . date('d-m-Y', strtotime($row['created_id'])) . '</td>
+        </tr>
+        ';
+    }
 
-            <tr>
-
-                <td><?= $no++; ?></td>
-
-                <td><?= $row['product_Code']; ?></td>
-
-                <td><?= $row['product_name']; ?></td>
-
-                <td><?= $row['stock']; ?></td>
-
-                <td>Rp. <?= number_format($row['price']); ?></td>
-
-                <td>
-                    <img src="produk_img/<?= $row['gambar']; ?>" width="80">
-                </td>
-
-            </tr>
-
-        <?php } ?>
-
-        </tbody>
-
-    </table>
-
-</div>
+    $html .= '
+    </tbody>
+</table>
 
 </body>
 </html>
+';
+
+// Tampilkan ke PDF
+$mpdf->WriteHTML($html);
+$mpdf->Output('Laporan_Stok_Barang.pdf', 'I');
+?>

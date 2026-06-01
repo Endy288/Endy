@@ -1,5 +1,13 @@
 <?php
-include "koneksi.php";
+session_start();
+include 'koneksi.php';
+
+// cek apakah sudah login
+if (!isset($_SESSION['login'])) {
+    header('Location: login.php');
+    exit;
+}
+
 $id = $_GET['id'];
 $query = mysqli_query($conn, "SELECT * FROM products WHERE id = '$id'");
 $hasil = mysqli_fetch_array($query);
@@ -41,9 +49,9 @@ if (isset($_POST['update'])) {
             category_id = '$id_kategori',
             product_name = '$nm_produk',
             stock = '$stok',
-            min_stock = '$min_stok'
-            price = '$harga',
-            WHERE id = 'id'
+            min_stock = '$min_stok',
+            price = '$harga'
+            WHERE id = '$id'
             ");
     }
     if ($update) {
@@ -62,7 +70,7 @@ if (isset($_POST['update'])) {
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>Data Produk - BarangEndy</title>
+    <title>Produk - BarangEndy</title>
     <meta content="" name="description">
     <meta content="" name="keywords">
 
@@ -103,7 +111,6 @@ if (isset($_POST['update'])) {
 
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
-        <li class="nav-item dropdown">
         <li class="nav-item dropdown pe-3">
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
@@ -112,53 +119,21 @@ if (isset($_POST['update'])) {
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Kevin Anderson</h6>
-              <span>Web Designer</span>
+              <h6><?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></h6>
+              <span><?php echo isset($_SESSION['role']) ? $_SESSION['role'] : 'Role'; ?></span>
             </li>
             <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
+              <hr class="dropdown-divider" />
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                <i class="bi bi-gear"></i>
-                <span>Account Settings</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
-                <i class="bi bi-question-circle"></i>
-                <span>Need Help?</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="login.php">
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Sign Out</span>
               </a>
             </li>
-
           </ul><!-- End Profile Dropdown Items -->
         </li><!-- End Profile Nav -->
-
       </ul>
     </nav><!-- End Icons Navigation -->
 
@@ -228,10 +203,10 @@ if (isset($_POST['update'])) {
                             <h5 class="card-title">Edit Produk</h5>
 
                             <!-- Vertical Form -->
-                            <form class="row g-3" method="POST" enctype="multipart/form-data">
+                            <form class="row g-3" method="post" enctype="multipart/form-data">
                                 <div class="col-12">
                                     <label for="kd_produk" class="form-label">Kode Produk</label>
-                                    <input type="text" class="form-control" id="kd_produk" name="kd_produk" value="<?php echo $hasil['product_code']; ?>" readonly>
+                                    <input type="text" class="form-control" id="kd_produk" name="kd_produk" value="<?php echo $hasil['product_Code']; ?>" readonly>
                                 </div>
                                 <div class="col-12">
                                     <label for="nm_produk" class="form-label">Nama produk</label>
@@ -256,7 +231,7 @@ if (isset($_POST['update'])) {
                                         $kategori = mysqli_query($conn, "SELECT * FROM categories");
                                         while ($k = mysqli_fetch_array($kategori)) {
                                             $selected = ($k['id'] == $hasil['category_id']) ? "selected" : "";
-                                            echo "<option value='{$k['id']}' $selected>{$k['category_name']}</option>";
+                                            echo "<option value='{$k['id']}' $selected>{$k['nm_kat']}</option>";
                                         }
                                         ?>
                                     </select>
@@ -284,15 +259,15 @@ if (isset($_POST['update'])) {
 
     </main><!-- End #main -->
 
-    <!-- ======= Footer ======= -->
-    <footer id="footer" class="footer">
-        <div class="copyright">
-            &copy; Copyright <strong><span>Nama Sistem</span></strong>. All Rights Reserved
-        </div>
-        <div class="credits">
-            Designed by <a href="#">EndyYobel</a>
-        </div>
-    </footer><!-- End Footer -->
+  <!-- ======= Footer ======= -->
+  <footer id="footer" class="footer">
+    <div class="copyright">
+      &copy; Copyright <strong><span>BarangEndy</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+      Designed by <a href= "https://www.instagram.com/endyyobelihs">EndyYobel</a>
+    </div>
+  </footer><!-- End Footer -->
 
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
