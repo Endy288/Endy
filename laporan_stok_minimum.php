@@ -161,7 +161,7 @@ $html .= '
 </body>
 </html>';
 
-// generate PDF
+// Menampilkan ke PDF
 $mpdf->WriteHTML($html);
 $mpdf->Output('laporan_stok_minimum.pdf', 'I');
 ?>

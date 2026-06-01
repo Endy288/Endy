@@ -4,7 +4,7 @@ session_start();
 // Hapus semua data session
 $_SESSION = [];
 
-// Hancurkan session
+//Hancur Session
 session_destroy();
 
 // Redirect ke halaman login atau home

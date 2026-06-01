@@ -173,7 +173,7 @@ $html = '
 </html>
 ';
 
-// Tampilkan ke PDF
+// menampilkan ke PDF
 $mpdf->WriteHTML($html);
 $mpdf->Output('Laporan_Stok_Barang.pdf', 'I');
 ?>

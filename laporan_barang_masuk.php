@@ -133,7 +133,7 @@ $html .= '
 </html>
 ';
 
-// Generate PDF
+// Menampilkan ke PDF
 $mpdf->WriteHTML($html);
 $mpdf->Output('laporan_barang_masuk.pdf', 'I');
 ?>
