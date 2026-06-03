@@ -84,14 +84,6 @@ if($update){
     die("Update Error: ".mysqli_error($conn));
 }
 
-    // Simpan riwayat stok
-    $log = mysqli_query($conn, "
-    INSERT INTO stock_logs
-    (product_id, change_type, qty, created_at)
-    VALUES
-    ('$product_id', '$change_type', '$qty', NOW())
-");
-
 if(!$log){
     die("Error Log: " . mysqli_error($conn));
 }
