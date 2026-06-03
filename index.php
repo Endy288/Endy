@@ -63,11 +63,11 @@ $q_menipis = mysqli_query($conn, "SELECT product_name, stock, min_stock FROM pro
 
 $q_aktivitas = mysqli_query($conn, "
 SELECT
-    sh.*,
+    sl.*,
     p.product_name
-FROM stock_history sh
-JOIN products p ON sh.product_id = p.id
-ORDER BY sh.created_at DESC
+FROM stock_logs sl
+JOIN products p ON sl.product_id = p.id
+ORDER BY sl.created_at DESC
 LIMIT 5
 ");
 
