@@ -61,16 +61,6 @@ if(!$query){
 // ambil produk dengan stok <= min_stock
 $q_menipis = mysqli_query($conn, "SELECT product_name, stock, min_stock FROM products WHERE stock <= min_stock ORDER BY stock ASC LIMIT 5");
 
-$q_aktivitas = mysqli_query($conn, "
-SELECT
-    sl.*,
-    p.product_name
-FROM stock_logs sl
-JOIN products p ON sl.product_id = p.id
-ORDER BY sl.created_at DESC
-LIMIT 5
-");
-
 if(!$q_aktivitas){
     die('SQL Error: ' . mysqli_error($conn));
 }
