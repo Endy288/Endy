@@ -1,47 +1,60 @@
 <?php
 session_start();
-// cek apakah sudah login
+
+// Cek login
 if (!isset($_SESSION['login'])) {
-  header('Location: login.php');
-  exit;
+    header("Location: login.php");
+    exit;
 }
-?>
-<?php
+
 include 'koneksi.php';
 date_default_timezone_set('Asia/Jakarta');
 
-// total produk
+// Total produk
 $q_produk = mysqli_query($conn, "SELECT COUNT(*) AS total_produk FROM products");
 $data_produk = mysqli_fetch_assoc($q_produk);
 
-// total stok
+// Total stok
 $q_stok = mysqli_query($conn, "SELECT SUM(stock) AS total_stok FROM products");
 $data_stok = mysqli_fetch_assoc($q_stok);
 
-// total kategori
+// Total kategori
 $q_kategori = mysqli_query($conn, "SELECT COUNT(*) AS total_kategori FROM categories");
 $data_kategori = mysqli_fetch_assoc($q_kategori);
 
-// barang masuk per hari (bulan ini)
-$q_masuk = mysqli_query($conn, "SELECT DAY(created_at) AS hari, SUM(qty) AS total FROM stock_logs WHERE change_type = 'ADD' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE()) GROUP BY DAY(created_at)");
+// Barang masuk per hari
+$q_masuk = mysqli_query($conn, "
+SELECT DAY(created_at) AS hari, SUM(qty) AS total
+FROM stock_logs
+WHERE change_type = 'ADD'
+AND MONTH(created_at) = MONTH(CURRENT_DATE())
+AND YEAR(created_at) = YEAR(CURRENT_DATE())
+GROUP BY DAY(created_at)
+");
 
-// barang keluar per hari (bulan ini)
-$q_keluar = mysqli_query($conn, "SELECT DAY(created_at) AS hari, SUM(qty) AS total FROM stock_logs WHERE change_type = 'REDUCE' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE()) GROUP BY DAY(created_at)");
+// Barang keluar per hari
+$q_keluar = mysqli_query($conn, "
+SELECT DAY(created_at) AS hari, SUM(qty) AS total
+FROM stock_logs
+WHERE change_type = 'REDUCE'
+AND MONTH(created_at) = MONTH(CURRENT_DATE())
+AND YEAR(created_at) = YEAR(CURRENT_DATE())
+GROUP BY DAY(created_at)
+");
 
-// siapkan array 1-31 (default 0)
+// Array grafik
 $masuk = array_fill(1, 31, 0);
 $keluar = array_fill(1, 31, 0);
 
-// isi data masuk
 while ($row = mysqli_fetch_assoc($q_masuk)) {
-  $masuk[$row['hari']] = (int) $row['total'];
+    $masuk[$row['hari']] = (int)$row['total'];
 }
 
-// isi data keluar
 while ($row = mysqli_fetch_assoc($q_keluar)) {
-  $keluar[$row['hari']] = (int) $row['total'];
+    $keluar[$row['hari']] = (int)$row['total'];
 }
 
+// Produk terbaru
 $query = mysqli_query($conn, "
 SELECT
     p.product_name,
@@ -49,39 +62,60 @@ SELECT
     c.nm_kat
 FROM products p
 JOIN categories c
-    ON p.category_id = c.category_id
-ORDER BY p.created_id DESC
+ON p.category_id = c.category_id
+ORDER BY p.id DESC
 LIMIT 5
 ");
 
-if(!$query){
-    die('SQL Error: ' . mysqli_error($conn));
+if (!$query) {
+    die("SQL Error: " . mysqli_error($conn));
 }
 
-// ambil produk dengan stok <= min_stock
-$q_menipis = mysqli_query($conn, "SELECT product_name, stock, min_stock FROM products WHERE stock <= min_stock ORDER BY stock ASC LIMIT 5");
+// Stok menipis
+$q_menipis = mysqli_query($conn, "
+SELECT product_name, stock, min_stock
+FROM products
+WHERE stock <= min_stock
+ORDER BY stock ASC
+LIMIT 5
+");
+
+// Aktivitas terbaru
+$q_aktivitas = mysqli_query($conn, "
+SELECT
+    sl.*,
+    p.product_name
+FROM stock_logs sl
+JOIN products p ON sl.product_id = p.id
+ORDER BY sl.created_at DESC
+LIMIT 5
+");
 
 if(!$q_aktivitas){
     die('SQL Error: ' . mysqli_error($conn));
 }
 
+if (!$q_aktivitas) {
+    die("SQL Error: " . mysqli_error($conn));
+}
+
 function waktu_lalu($datetime)
 {
-  $selisih = time() - strtotime($datetime);
+    $selisih = time() - strtotime($datetime);
 
-  // kalau negatif, anggap 0
-  if ($selisih < 0) $selisih = 0;
-  $menit = floor($selisih / 60);
-  $jam = floor($selisih / 3600);
-  $hari = floor($selisih / 86400);
+    if ($selisih < 0) $selisih = 0;
 
-  if ($menit < 60) {
-    return $menit . ' menit yang lalu';
-  } else if ($jam < 24) {
-    return $jam . ' jam yang lalu';
-  } else {
-    return $hari . ' hari yang lalu';
-  }
+    $menit = floor($selisih / 60);
+    $jam = floor($selisih / 3600);
+    $hari = floor($selisih / 86400);
+
+    if ($menit < 60) {
+        return $menit . " menit yang lalu";
+    } elseif ($jam < 24) {
+        return $jam . " jam yang lalu";
+    } else {
+        return $hari . " hari yang lalu";
+    }
 }
 ?>
 <!DOCTYPE html>
